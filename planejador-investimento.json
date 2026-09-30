@@ -1,0 +1,291 @@
+{
+  "name": "planejador-investimentos",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "a4f26afc-c13f-4ec0-9ee9-ac7208c78bff",
+      "name": "iniciar ao clicar"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1qsa7ThiQOEvHUJao15npL7eEAN3KW2ShGQkCYE8ZYCw",
+          "mode": "list",
+          "cachedResultName": "clientes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qsa7ThiQOEvHUJao15npL7eEAN3KW2ShGQkCYE8ZYCw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "clientes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qsa7ThiQOEvHUJao15npL7eEAN3KW2ShGQkCYE8ZYCw/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -112
+      ],
+      "id": "a8dd1074-a26a-4e1b-9a53-19d6324ceec8",
+      "name": "GET clientes",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fR5lwr6eY6ItnbgW",
+          "name": "Google Sheets Night"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1qsa7ThiQOEvHUJao15npL7eEAN3KW2ShGQkCYE8ZYCw",
+          "mode": "list",
+          "cachedResultName": "clientes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qsa7ThiQOEvHUJao15npL7eEAN3KW2ShGQkCYE8ZYCw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1074628140,
+          "mode": "list",
+          "cachedResultName": "investimentos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qsa7ThiQOEvHUJao15npL7eEAN3KW2ShGQkCYE8ZYCw/edit#gid=1074628140"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        80
+      ],
+      "id": "fb68bc47-9958-485d-8813-fb68f7b6bb66",
+      "name": "GET perfis",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fR5lwr6eY6ItnbgW",
+          "name": "Google Sheets Night"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Atue como um expert em finanças e avalie se é possível com o saldo ({{ $json.Saldo }}) é possível investir no produto ({{ $json.Produto }}) e depois de 12 meses o valor que irá render, baseado nessa rentabilidade ({{ $json.Rentabilidade }})\n\nObservação, o mínimo para investir nesse determinado produto é R$ {{ $json.Minimo }}\n\nComo resultado, gere uma mensagem de e-mail notificando o cliente {{ $json.Nome }} sobre a possibilidade de investir no produto. Utilize linguagem formal, seja objetivo e trate o usuário com respeito.\n\nA saída é apenas o e-mail, evite utilizar terceira pessoa e informações sobre análise tecnica, a saída é o e-mail que será enviado para o cliente"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        -16
+      ],
+      "id": "350830dc-3315-4c98-a3b4-c0ecfb37cf2c",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tv6DnfuVeS6fLJPN",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "bf051934-cf56-4da6-9a8a-183bfccce398",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f17893e-4216-449b-a2c0-3eccbf43652b",
+              "name": "message",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1248,
+        -16
+      ],
+      "id": "7501291c-6bed-47b0-951e-90d6a99adb39",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "8b80eaaa-3142-43ea-8703-6c89aa505e4f",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Financeiro <email@mail.com>",
+        "toEmail": "={{ $('Limit').item.json.Email }}",
+        "subject": "={{ $json.message.assunto }}",
+        "html": "={{ $json.message.corpo_email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1472,
+        -16
+      ],
+      "id": "d07781bc-6d44-4721-9b33-bed751a7e7c4",
+      "name": "Send an Email",
+      "webhookId": "5e207522-3b09-4ec8-8b4f-7ac4fadb21cd",
+      "credentials": {
+        "smtp": {
+          "id": "XKrxf6MEfXeAb8Vc",
+          "name": "SMTP Night"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "iniciar ao clicar": {
+      "main": [
+        [
+          {
+            "node": "GET clientes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET perfis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET clientes": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET perfis": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3f51be7b-a6ee-4349-ae2e-7bdbc335f6b3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2188d6aaa052d2129ef13a501fadd93026f1cd42f5edd1d75be32ade713a582a"
+  },
+  "nodeGroups": [],
+  "id": "3WnFZQOhiAtbeW9a",
+  "tags": []
+}
